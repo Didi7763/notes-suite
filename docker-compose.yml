@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: notes-postgres
+    environment:
+      POSTGRES_DB: notes_db
+      POSTGRES_USER: notes_user
+      POSTGRES_PASSWORD: notes_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - notes-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notes_user -d notes_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # API Backend Spring Boot
+  api:
+    build:
+      context: ./backend-spring
+      dockerfile: Dockerfile
+    container_name: notes-api
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/notes_db
+      SPRING_DATASOURCE_USERNAME: notes_user
+      SPRING_DATASOURCE_PASSWORD: notes_password
+      JWT_SECRET: mySecretKey123456789012345678901234567890
+      JWT_EXPIRATION: 86400000
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - notes-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend Web React
+  web:
+    build:
+      context: ./web-frontend
+      dockerfile: Dockerfile
+    container_name: notes-web
+    environment:
+      REACT_APP_API_URL: http://localhost:8080/api/v1
+    ports:
+      - "8081:80"
+    depends_on:
+      - api
+    networks:
+      - notes-network
+
+volumes:
+  postgres_data:
+
+networks:
+  notes-network:
+    driver: bridge
