@@ -1,0 +1,59 @@
+-- Migration V10: Insertion des données de test
+-- Créé le: 2024-01-01
+-- Description: Insertion de données de test pour le développement et les tests
+
+-- Insertion d'utilisateurs de test
+INSERT INTO users (id, email, password_hash) VALUES 
+    (1, 'admin@notessuite.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
+    (2, 'user1@notessuite.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
+    (3, 'user2@notessuite.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
+    (4, 'demo@notessuite.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+
+-- Réinitialiser la séquence pour les prochains IDs auto-générés
+SELECT setval('users_id_seq', 4, true);
+
+-- Insertion de tags de test
+INSERT INTO tags (label) VALUES 
+    ('travail'),
+    ('personnel'),
+    ('projet'),
+    ('important'),
+    ('urgent'),
+    ('notes'),
+    ('documentation'),
+    ('recettes'),
+    ('cuisine'),
+    ('developpement');
+
+-- Insertion de notes de test
+INSERT INTO notes (owner_id, title, content_md, visibility) VALUES 
+    (1, 'Bienvenue dans Notes Suite', '# Bienvenue !\n\nCeci est votre première note. Vous pouvez utiliser le **markdown** pour formater vos notes.\n\n## Fonctionnalités\n\n- Création de notes\n- Partage avec d''autres utilisateurs\n- Liens publics\n- Système de tags', 'PUBLIC'),
+    (1, 'Note privée admin', 'Cette note est privée et ne sera visible que par l''administrateur.\n\nContenu confidentiel...', 'PRIVATE'),
+    (2, 'Mes tâches du jour', '# Tâches du jour\n\n- [ ] Réviser le code\n- [ ] Tester l''application\n- [x] Créer la documentation\n- [ ] Déployer en production', 'PRIVATE'),
+    (2, 'Projet Notes Suite', '# Projet Notes Suite\n\n## Objectifs\n\n- Créer une application de gestion de notes\n- Implémenter le partage\n- Ajouter la synchronisation mobile\n- Interface utilisateur moderne', 'SHARED'),
+    (3, 'Recettes de cuisine', '# Recettes de cuisine\n\n## Pâtes carbonara\n\n### Ingrédients\n- Pâtes (500g)\n- Lardons (200g)\n- Œufs (3)\n- Parmesan râpé (100g)\n- Poivre noir\n\n### Préparation\n1. Cuire les pâtes\n2. Faire revenir les lardons\n3. Mélanger les œufs et le parmesan\n4. Ajouter aux pâtes chaudes', 'PUBLIC'),
+    (4, 'Notes de développement', '# Notes de développement\n\n## Architecture\n\n- Backend: Spring Boot 3\n- Frontend: React + TypeScript\n- Mobile: React Native\n- Base de données: PostgreSQL', 'PRIVATE');
+
+-- Liaison notes-tags
+INSERT INTO note_tags (note_id, tag_id) VALUES 
+    (1, 6), (1, 7),  -- note 1: notes, documentation
+    (2, 1), (2, 4),  -- note 2: travail, important
+    (3, 1), (3, 4), (3, 5),  -- note 3: travail, important, urgent
+    (4, 1), (4, 3), (4, 7), (4, 10),  -- note 4: travail, projet, documentation, développement
+    (5, 2), (5, 8), (5, 9),  -- note 5: personnel, recettes, cuisine
+    (6, 1), (6, 7), (6, 10);  -- note 6: travail, documentation, développement
+
+-- Partage de notes
+INSERT INTO shares (note_id, shared_with_user_id, permission) VALUES 
+    (4, 1, 'READ'),   -- user1 partage sa note projet avec admin
+    (4, 3, 'WRITE'),  -- user1 partage sa note projet avec user2
+    (6, 1, 'READ');   -- demo partage ses notes de développement avec admin
+
+-- Liens publics
+INSERT INTO public_links (note_id, url_token, expires_at) VALUES 
+    (1, generate_url_token(), NULL),  -- Lien permanent pour la note de bienvenue
+    (5, generate_url_token(), CURRENT_TIMESTAMP + INTERVAL '30 days');  -- Lien temporaire pour les recettes
+
+
+
+

@@ -1,0 +1,27 @@
+import React from 'react';
+import { Container, Typography, Box } from '@mui/material';
+import { Share } from '@mui/icons-material';
+
+const SharedPage: React.FC = () => {
+  return (
+    <Container maxWidth="xl">
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          <Share sx={{ mr: 1, verticalAlign: 'middle' }} />
+          Notes partagées
+        </Typography>
+      </Box>
+      
+      <Box sx={{ textAlign: 'center', py: 8 }}>
+        <Share sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+        <Typography variant="h6" color="text.secondary">
+          Page en cours de développement
+        </Typography>
+      </Box>
+    </Container>
+  );
+};
+
+export default SharedPage;
+
+
